@@ -11,11 +11,11 @@ type WaterfallTooltipProps = {
 
 export function RevenueCostBar({ data }: { data: { name: string; revenue: number; cost: number }[] }) {
   return (
-    <div className="h-64 w-full rounded-xl border border-white/10 bg-white/5 p-2">
+    <div className="h-64 w-full rounded-xl border border-zinc-200 bg-white p-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
-          <XAxis dataKey="name" stroke="#aaa" />
-          <YAxis stroke="#aaa" tickFormatter={(v) => new Intl.NumberFormat("en-AE", { notation: "compact", maximumFractionDigits: 1 }).format(v)} />
+          <XAxis dataKey="name" stroke="#6b7280" />
+          <YAxis stroke="#6b7280" tickFormatter={(v) => new Intl.NumberFormat("en-AE", { notation: "compact", maximumFractionDigits: 1 }).format(v)} />
           <Tooltip formatter={(v: unknown) => new Intl.NumberFormat("en-AE", { style: "currency", currency: "AED", maximumFractionDigits: 0 }).format(typeof v === "number" ? v : Number(v ?? 0))} />
           <Legend />
           <Bar dataKey="revenue" fill="#34d399" name="Revenue" radius={[4, 4, 0, 0]} />
@@ -50,7 +50,7 @@ export function WaterfallChart({
 }) {
   // Safety checks
   if (!revenueGroups || !costGroups || typeof ebitdaAED !== 'number') {
-    return <div className="h-80 w-full flex items-center justify-center text-white/60">No data available</div>;
+    return <div className="h-80 w-full flex items-center justify-center text-zinc-500">No data available</div>;
   }
 
   // Helper function to convert AED amounts to selected currency
@@ -125,16 +125,16 @@ export function WaterfallChart({
     if (active && payload && payload.length) {
       const data = payload[0].payload as WaterfallData;
       return (
-        <div className="rounded-lg border border-white/20 bg-zinc-900/95 p-3 text-sm backdrop-blur">
-          <p className="font-medium text-white">{label}</p>
-          <p className="text-white/70">
+        <div className="rounded-lg border border-zinc-200 bg-white p-3 text-sm shadow">
+          <p className="font-medium text-zinc-900">{label}</p>
+          <p className="text-zinc-600">
             {data.type === "negative" ? "Cost: " : "Value: "}
-            <span className={data.type === "negative" ? "text-red-300" : "text-emerald-300"}>
+            <span className={data.type === "negative" ? "text-rose-600" : "text-emerald-600"}>
               {formatCurrency(data.isStart || data.isEnd ? Math.abs(data.cumulative) : Math.abs(data.value))}
             </span>
           </p>
-          <p className="text-white/70">
-            Running total: <span className="text-white">{formatCurrency(data.cumulative)}</span>
+          <p className="text-zinc-600">
+            Running total: <span className="text-zinc-900">{formatCurrency(data.cumulative)}</span>
           </p>
         </div>
       );
@@ -149,7 +149,7 @@ export function WaterfallChart({
   // If no data, show empty state
   if (data.length <= 1) {
     return (
-      <div className="h-80 w-full flex items-center justify-center text-white/60">
+      <div className="h-80 w-full flex items-center justify-center text-zinc-500">
         <div className="text-center">
           <div className="text-lg">No revenue or cost data</div>
           <div className="text-sm">Add revenue and cost items to see the waterfall chart</div>
@@ -167,14 +167,14 @@ export function WaterfallChart({
         >
           <XAxis 
             dataKey="name" 
-            stroke="#aaa" 
+            stroke="#6b7280" 
             fontSize={12}
             angle={-45}
             textAnchor="end"
             height={80}
           />
           <YAxis 
-            stroke="#aaa" 
+            stroke="#6b7280" 
             fontSize={12}
             tickFormatter={formatCurrency}
             domain={[minValue * 1.1, maxValue * 1.1]}
@@ -190,9 +190,9 @@ export function WaterfallChart({
               <Cell 
                 key={`cell-${index}`} 
                 fill={
-                  entry.isStart ? "#34d399" :
-                  entry.isEnd ? (entry.cumulative >= 0 ? "#34d399" : "#ef4444") :
-                  entry.type === "negative" ? "#ef4444" : "#34d399"
+                  entry.isStart ? "#10b981" :
+                  entry.isEnd ? (entry.cumulative >= 0 ? "#10b981" : "#ef4444") :
+                  entry.type === "negative" ? "#ef4444" : "#10b981"
                 }
               />
             ))}

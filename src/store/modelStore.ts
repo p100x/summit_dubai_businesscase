@@ -3,6 +3,8 @@ import { Model } from "@/lib/model/schema";
 import { sampleModel } from "@/lib/model/sample";
 import { evaluateModel, EvaluationResult } from "@/lib/model/engine";
 import { parseModelFromYaml, stringifyModelToYaml } from "@/lib/model/yaml";
+import { RealtimeData, RealtimeComparison } from "@/lib/realtime/types";
+import { fetchRealtimeData, calculateComparison } from "@/lib/realtime/service";
 
 type Currency = 'EUR' | 'AED';
 
@@ -24,6 +26,10 @@ type ModelState = {
   businessCases: BusinessCase[];
   isLoading: boolean;
   isSaving: boolean;
+  realtimeData: RealtimeData | null;
+  realtimeComparison: RealtimeComparison | null;
+  isLoadingRealtime: boolean;
+  realtimeEnabled: boolean;
   loadYaml: (yaml: string) => void;
   updateYaml: (yaml: string) => void;
   setModel: (updater: (m: Model) => Model) => void;
@@ -35,11 +41,17 @@ type ModelState = {
   updateBusinessCase: (id: string, name: string, description?: string) => Promise<void>;
   deleteBusinessCase: (id: string) => Promise<void>;
   newBusinessCase: () => void;
+  fetchRealtimeData: () => Promise<void>;
+  toggleRealtimeData: () => void;
+  startRealtimeUpdates: () => void;
+  stopRealtimeUpdates: () => void;
 };
 
 function initialYaml(): string {
   return stringifyModelToYaml(sampleModel);
 }
+
+let realtimeInterval: NodeJS.Timeout | null = null;
 
 export const useModelStore = create<ModelState>((set, get) => ({
   rawYaml: initialYaml(),
@@ -51,6 +63,10 @@ export const useModelStore = create<ModelState>((set, get) => ({
   businessCases: [],
   isLoading: false,
   isSaving: false,
+  realtimeData: null,
+  realtimeComparison: null,
+  isLoadingRealtime: false,
+  realtimeEnabled: false,
   loadYaml: (yaml: string) => {
     try {
       const model = parseModelFromYaml(yaml);
@@ -161,6 +177,47 @@ export const useModelStore = create<ModelState>((set, get) => ({
     const yaml = initialYaml();
     get().loadYaml(yaml);
     set({ currentBusinessCaseId: undefined });
+  },
+  fetchRealtimeData: async () => {
+    set({ isLoadingRealtime: true });
+    try {
+      const realtimeData = await fetchRealtimeData();
+      const comparison = calculateComparison(realtimeData, get().evaluation);
+      set({ 
+        realtimeData, 
+        realtimeComparison: comparison, 
+        isLoadingRealtime: false 
+      });
+    } catch (error) {
+      console.error('Failed to fetch realtime data:', error);
+      set({ isLoadingRealtime: false });
+    }
+  },
+  toggleRealtimeData: () => {
+    const { realtimeEnabled } = get();
+    if (realtimeEnabled) {
+      get().stopRealtimeUpdates();
+    } else {
+      // Just fetch once, no auto-refresh
+      get().fetchRealtimeData();
+      set({ realtimeEnabled: true });
+    }
+  },
+  startRealtimeUpdates: () => {
+    // Only fetch once, no interval
+    get().fetchRealtimeData();
+  },
+  stopRealtimeUpdates: () => {
+    if (realtimeInterval) {
+      clearInterval(realtimeInterval);
+      realtimeInterval = null;
+    }
+    set({ 
+      realtimeData: null, 
+      realtimeComparison: null,
+      isLoadingRealtime: false,
+      realtimeEnabled: false
+    });
   },
 }));
 

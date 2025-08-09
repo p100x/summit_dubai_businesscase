@@ -5,12 +5,12 @@ import { yaml as yamlLang } from "@codemirror/lang-yaml";
 
 export function YamlEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
       <CodeMirror
         value={value}
         height="420px"
         extensions={[yamlLang()]}
-        theme="dark"
+        theme="light"
         onChange={(v) => onChange(v)}
       />
     </div>

@@ -16,29 +16,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #e5e7eb;
-    --card: #0f1115;
-    --muted: #9ca3af;
-    --ring: #34d399;
-    --accent: #34d399;
-  }
-}
+/* Force bright mode palette regardless of system preference */
 
 body {
-  background: radial-gradient(1200px 600px at 20% -10%, rgba(52, 211, 153, 0.08), transparent),
+  /* Light, modern background with subtle colored glows */
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(16, 185, 129, 0.08), transparent),
     radial-gradient(1000px 500px at 100% 0%, rgba(59, 130, 246, 0.06), transparent),
-    linear-gradient(to bottom, #0b0b10, var(--background));
+    linear-gradient(to bottom, #ffffff, #f8fafc);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--accent) 40%, transparent);
-  color: white;
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
+  color: #0b0b0b;
 }
 
 /* Subtle, consistent default focus ring for interactive elements */

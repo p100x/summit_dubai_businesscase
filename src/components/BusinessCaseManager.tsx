@@ -62,7 +62,7 @@ export function BusinessCaseManager() {
       <div className="flex gap-2">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium flex items-center gap-2"
+          className="px-4 py-2 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -79,22 +79,22 @@ export function BusinessCaseManager() {
             setShowSaveDialog(true);
           }}
           disabled={isSaving}
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 shadow-sm"
         >
           {isSaving ? 'Saving...' : currentBusinessCaseId ? 'Update' : 'Save As'}
         </button>
       </div>
 
       {isOpen && (
-        <div className="absolute top-12 left-0 z-50 w-96 bg-white rounded-lg shadow-xl border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
+        <div className="absolute top-12 left-0 z-50 w-96 bg-white rounded-lg shadow-xl border border-zinc-200">
+          <div className="p-4 border-b border-zinc-200">
             <h3 className="text-lg font-semibold">Business Cases</h3>
           </div>
           
           <div className="p-2">
             <button
               onClick={handleNew}
-              className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
+              className="w-full text-left px-3 py-2 hover:bg-zinc-50 rounded flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -105,24 +105,24 @@ export function BusinessCaseManager() {
           
           <div className="max-h-96 overflow-y-auto p-2">
             {isLoading ? (
-              <div className="text-center py-4 text-gray-500">Loading...</div>
+              <div className="text-center py-4 text-zinc-500">Loading...</div>
             ) : businessCases.length === 0 ? (
-              <div className="text-center py-4 text-gray-500">No saved business cases</div>
+              <div className="text-center py-4 text-zinc-500">No saved business cases</div>
             ) : (
               <div className="space-y-1">
                 {businessCases.map((bc) => (
                   <div
                     key={bc.id}
-                    className={`px-3 py-2 rounded hover:bg-gray-100 cursor-pointer flex justify-between items-center group ${
-                      bc.id === currentBusinessCaseId ? 'bg-blue-50' : ''
+                    className={`px-3 py-2 rounded hover:bg-zinc-50 cursor-pointer flex justify-between items-center group ${
+                      bc.id === currentBusinessCaseId ? 'bg-emerald-50' : ''
                     }`}
                   >
                     <div onClick={() => handleLoad(bc.id)} className="flex-1">
                       <div className="font-medium">{bc.name}</div>
                       {bc.description && (
-                        <div className="text-sm text-gray-500">{bc.description}</div>
+                        <div className="text-sm text-zinc-500">{bc.description}</div>
                       )}
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-zinc-400">
                         {new Date(bc.updatedAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -131,9 +131,9 @@ export function BusinessCaseManager() {
                         e.stopPropagation();
                         handleDelete(bc.id);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded"
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-rose-50 rounded"
                     >
-                      <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
@@ -146,8 +146,8 @@ export function BusinessCaseManager() {
       )}
 
       {showSaveDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
+        <div className="fixed inset-0 bg-zinc-900/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 shadow-xl border border-zinc-200">
             <h3 className="text-lg font-semibold mb-4">
               {currentBusinessCaseId ? 'Update Business Case' : 'Save Business Case'}
             </h3>
@@ -159,7 +159,7 @@ export function BusinessCaseManager() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
                   placeholder="Enter business case name"
                 />
               </div>
@@ -169,7 +169,7 @@ export function BusinessCaseManager() {
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
                   rows={3}
                   placeholder="Enter description"
                 />
@@ -179,14 +179,14 @@ export function BusinessCaseManager() {
             <div className="flex gap-2 mt-6">
               <button
                 onClick={() => setShowSaveDialog(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="flex-1 px-4 py-2 border border-zinc-300 rounded-lg hover:bg-zinc-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={!name.trim() || isSaving}
-                className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-50"
               >
                 {isSaving ? 'Saving...' : currentBusinessCaseId ? 'Update' : 'Save'}
               </button>

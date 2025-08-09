@@ -1,11 +1,14 @@
 "use client";
 import { useModelStore } from "@/store/modelStore";
 import { KpiCard } from "@/components/KpiCard";
-import { SimpleTable } from "@/components/Tables";
+import { ComparisonKpiCard } from "@/components/ComparisonKpiCard";
+import { CollapsibleTable } from "@/components/CollapsibleTable";
 import { WaterfallChart } from "@/components/Charts";
-import ModelEditor from "@/components/ModelEditor";
+import { CollapsibleModelEditor } from "@/components/CollapsibleModelEditor";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { BusinessCaseManager } from "@/components/BusinessCaseManager";
+import { RealtimeToggle } from "@/components/RealtimeToggle";
+import RoomCalculator from "@/components/RoomCalculator";
 
 function formatCurrency(n: number, currencyCode: 'EUR' | 'AED') {
   const locale = currencyCode === 'EUR' ? 'de-DE' : 'en-AE';
@@ -17,7 +20,7 @@ function formatCurrency(n: number, currencyCode: 'EUR' | 'AED') {
 }
 
 export default function Home() {
-  const { evaluation, error, model, currency } = useModelStore();
+  const { evaluation, model, currency, realtimeComparison, isLoadingRealtime } = useModelStore();
   const fxAssumption = (model.assumptions as Record<string, unknown>)["eur_to_aed"];
   const fx = typeof fxAssumption === "number" ? fxAssumption : Number(fxAssumption ?? 0);
 
@@ -32,67 +35,76 @@ export default function Home() {
     return formatCurrency(convertedAmount, currency);
   };
 
-  const revenueRows = evaluation.revenueGroups.flatMap((g) => [
-    { name: `— ${g.name}`, amount: <span className="font-medium">{currency_format(g.subtotalAED)}</span> },
-    ...g.items.map((it) => ({ name: it.name, amount: currency_format(it.amountAED) })),
-  ]);
-  const costRows = evaluation.costGroups.flatMap((g) => [
-    { name: `— ${g.name}`, amount: <span className="font-medium">{currency_format(g.subtotalAED)}</span> },
-    ...g.items.map((it) => ({ name: it.name, amount: currency_format(it.amountAED) })),
-  ]);
 
   return (
-    <div className="min-h-screen text-white">
-      <div className="mx-auto max-w-7xl space-y-8 px-6 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-emerald-50/20 text-zinc-900">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 py-6 sm:py-10">
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="bg-gradient-to-r from-emerald-300 to-teal-200 bg-clip-text text-3xl font-semibold tracking-tight text-transparent">
+            <h1 className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-3xl font-semibold tracking-tight text-transparent">
               FELS Wealth Summit 2025
             </h1>
-            <p className="text-white/60">Integrated Business Case Dashboard</p>
+            <p className="text-zinc-500">Integrated Business Case Dashboard</p>
           </div>
           <div className="flex items-center gap-4">
             <BusinessCaseManager />
+            <RealtimeToggle />
             <CurrencySwitcher />
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/80">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm text-emerald-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
               EUR/AED: {fx.toFixed(2)}
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <KpiCard 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ComparisonKpiCard 
             label="Gross Revenue" 
-            value={convertAmount(evaluation.revenueAED)} 
+            planValue={convertAmount(evaluation.revenueAED)} 
+            actualValue={realtimeComparison?.realtimeData ? convertAmount(realtimeComparison.realtimeData.revenueAED) : null}
+            variance={realtimeComparison?.variance ? convertAmount(realtimeComparison.variance.revenueAED) : null}
+            variancePercent={realtimeComparison?.variance?.revenuePercent ?? null}
             format="currency" 
             currency={currency}
             icon={<span>💰</span>} 
+            isLoading={isLoadingRealtime}
           />
-          <KpiCard 
+          <ComparisonKpiCard 
             label="Total Cost" 
-            value={convertAmount(evaluation.costAED)} 
+            planValue={convertAmount(evaluation.costAED)} 
+            actualValue={realtimeComparison?.realtimeData ? convertAmount(realtimeComparison.realtimeData.costAED) : null}
+            variance={realtimeComparison?.variance ? convertAmount(realtimeComparison.variance.costAED) : null}
+            variancePercent={realtimeComparison?.variance?.costPercent ?? null}
             format="currency" 
             currency={currency}
             icon={<span>🧾</span>} 
+            isLoading={isLoadingRealtime}
           />
-          <KpiCard 
+          <ComparisonKpiCard 
             label="EBITDA" 
-            value={convertAmount(evaluation.ebitdaAED)} 
+            planValue={convertAmount(evaluation.ebitdaAED)} 
+            actualValue={realtimeComparison?.realtimeData ? convertAmount(realtimeComparison.realtimeData.ebitdaAED) : null}
+            variance={realtimeComparison?.variance ? convertAmount(realtimeComparison.variance.ebitdaAED) : null}
+            variancePercent={realtimeComparison?.variance?.ebitdaPercent ?? null}
             format="currency" 
             currency={currency}
             icon={<span>📈</span>} 
+            isLoading={isLoadingRealtime}
           />
-          <KpiCard 
+          <ComparisonKpiCard 
             label="EBITDA Margin" 
-            value={evaluation.ebitdaMargin} 
+            planValue={evaluation.ebitdaMargin} 
+            actualValue={realtimeComparison?.realtimeData?.ebitdaMargin ?? null}
+            variance={realtimeComparison?.variance?.ebitdaMarginPoints !== null && realtimeComparison?.variance?.ebitdaMarginPoints !== undefined ? realtimeComparison.variance.ebitdaMarginPoints / 100 : null}
+            variancePercent={realtimeComparison?.variance?.ebitdaMarginPoints ?? null}
             format="percent" 
             icon={<span>➗</span>} 
+            isLoading={isLoadingRealtime}
           />
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold">Revenue to EBITDA Waterfall</h2>
+        <div className="rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold">Revenue to EBITDA Waterfall</h2>
           <WaterfallChart
             revenueGroups={evaluation.revenueGroups}
             costGroups={evaluation.costGroups}
@@ -102,24 +114,73 @@ export default function Home() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
-            <h2 className="mb-2 text-lg font-semibold">Revenue Details</h2>
-            <SimpleTable columns={[{ key: "name", label: "Item" }, { key: "amount", label: currency, align: "right" }]} rows={revenueRows} />
+        <RoomCalculator />
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm p-5 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold">Revenue Details</h2>
+            <CollapsibleTable 
+              columns={[{ key: "name", label: "Item" }, { key: "amount", label: currency, align: "right" }]} 
+              groups={evaluation.revenueGroups.map((g, gi) => ({
+                name: g.name,
+                subtotal: currency_format(g.subtotalAED),
+                items: g.items.map((item, ii) => {
+                  const originalItem = model.model.revenues[gi]?.items[ii];
+                  let details = "";
+                  if (originalItem) {
+                    const parts = [];
+                    if (originalItem.units) parts.push(`${originalItem.units} Einheiten`);
+                    if (originalItem.price_eur) parts.push(`€${originalItem.price_eur}`);
+                    if (originalItem.price_aed) parts.push(`${originalItem.price_aed} AED`);
+                    if (originalItem.margin_eur) parts.push(`Marge: €${originalItem.margin_eur}`);
+                    if (originalItem.margin_aed) parts.push(`Marge: ${originalItem.margin_aed} AED`);
+                    if (originalItem.value && "formula" in originalItem.value) parts.push(`Formel: ${originalItem.value.formula}`);
+                    details = parts.join(" • ");
+                  }
+                  return {
+                    name: item.name,
+                    amount: currency_format(item.amountAED),
+                    details
+                  };
+                })
+              }))}
+            />
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
-            <h2 className="mb-2 text-lg font-semibold">Cost Details</h2>
-            <SimpleTable columns={[{ key: "name", label: "Item" }, { key: "amount", label: currency, align: "right" }]} rows={costRows} />
+          <div className="rounded-xl border border-zinc-200 bg-white/80 backdrop-blur-sm p-5 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold">Cost Details</h2>
+            <CollapsibleTable 
+              columns={[{ key: "name", label: "Item" }, { key: "amount", label: currency, align: "right" }]} 
+              groups={evaluation.costGroups.map((g, gi) => ({
+                name: g.name,
+                subtotal: currency_format(g.subtotalAED),
+                items: g.items.map((item, ii) => {
+                  const originalItem = model.model.costs[gi]?.items[ii];
+                  let details = "";
+                  if (originalItem) {
+                    const parts = [];
+                    if (originalItem.value && "formula" in originalItem.value) {
+                      parts.push(`Formel: ${originalItem.value.formula}`);
+                    } else if (originalItem.value && "amount" in originalItem.value) {
+                      parts.push(`Betrag: ${originalItem.value.amount} AED`);
+                    }
+                    if (originalItem.inputs) {
+                      const inputs = Object.entries(originalItem.inputs).map(([key, value]) => `${key}=${value}`);
+                      if (inputs.length > 0) parts.push(`Eingaben: ${inputs.join(", ")}`);
+                    }
+                    details = parts.join(" • ");
+                  }
+                  return {
+                    name: item.name,
+                    amount: currency_format(item.amountAED),
+                    details
+                  };
+                })
+              }))}
+            />
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Model Editor</h2>
-            {error && <span className="text-sm text-amber-400">{error}</span>}
-          </div>
-          <ModelEditor />
-        </div>
+        <CollapsibleModelEditor />
       </div>
     </div>
   );

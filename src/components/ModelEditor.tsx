@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { useModelStore } from "@/store/modelStore";
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import {
   CashflowEntry,
   CostGroup,
@@ -17,14 +18,30 @@ import {
 
 type ChangeHandler<T> = (updater: (prev: T) => T) => void;
 
-function Section({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) {
+function Section({ title, children, actions, defaultExpanded = true }: { title: string; children: React.ReactNode; actions?: React.ReactNode; defaultExpanded?: boolean }) {
+  const [isExpanded, setIsExpanded] = React.useState(defaultExpanded);
+  
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4 space-y-3 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{title}</h3>
+    <div className="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-zinc-50 to-zinc-100 border-b border-zinc-200">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-lg font-semibold hover:text-emerald-600 transition-colors"
+        >
+          {isExpanded ? (
+            <ChevronDownIcon className="h-4 w-4" />
+          ) : (
+            <ChevronRightIcon className="h-4 w-4" />
+          )}
+          {title}
+        </button>
         {actions}
       </div>
-      {children}
+      {isExpanded && (
+        <div className="p-4 space-y-3 animate-in slide-in-from-top duration-200">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -32,7 +49,7 @@ function Section({ title, children, actions }: { title: string; children: React.
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input
-      className="w-full rounded-md bg-white/10 border border-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-400/40 placeholder:text-white/40 transition-colors hover:bg-white/15"
+      className="w-full rounded-md bg-white border border-zinc-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-300 placeholder:text-zinc-400 transition-colors"
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
@@ -44,7 +61,7 @@ function NumberInput({ value, onChange, placeholder }: { value: number | undefin
   const str = value == null ? "" : String(value);
   return (
     <input
-      className="w-full rounded-md bg-white/10 border border-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-400/40 placeholder:text-white/40 transition-colors hover:bg-white/15"
+      className="w-full rounded-md bg-white border border-zinc-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-300 placeholder:text-zinc-400 transition-colors"
       inputMode="decimal"
       value={str}
       placeholder={placeholder}
@@ -60,12 +77,12 @@ function NumberInput({ value, onChange, placeholder }: { value: number | undefin
 function Select<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
   return (
     <select
-      className="w-full rounded-md bg-white/10 border border-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-400/40 transition-colors hover:bg-white/15"
+      className="w-full rounded-md bg-white border border-zinc-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-300 transition-colors"
       value={value}
       onChange={(e) => onChange(e.target.value as T)}
     >
       {options.map((o) => (
-        <option key={o.value} value={o.value} className="bg-zinc-900">
+        <option key={o.value} value={o.value} className="bg-white">
           {o.label}
         </option>
       ))}
@@ -77,12 +94,12 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-1.5 text-sm ${
-        checked ? "bg-emerald-500/20 text-emerald-200" : "bg-white/10 text-white/80"
+      className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm ${
+        checked ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "border-zinc-300 bg-white text-zinc-600"
       }`}
       onClick={() => onChange(!checked)}
     >
-      <span className={`h-2.5 w-2.5 rounded-full ${checked ? "bg-emerald-400" : "bg-white/40"}`} />
+      <span className={`h-2.5 w-2.5 rounded-full ${checked ? "bg-emerald-500" : "bg-zinc-300"}`} />
       {label ?? (checked ? "On" : "Off")}
     </button>
   );
@@ -91,12 +108,12 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 function IconButton({ label, onClick, tone = "neutral" }: { label: string; onClick: () => void; tone?: "neutral" | "danger" | "success" }) {
   const toneCls =
     tone === "danger"
-      ? "bg-rose-500/20 text-rose-200 hover:bg-rose-500/25"
+      ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
       : tone === "success"
-      ? "bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/25"
-      : "bg-white/10 text-white/80 hover:bg-white/15";
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+      : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50";
   return (
-    <button type="button" className={`rounded-md border border-white/10 px-3 py-1.5 text-sm ${toneCls}`} onClick={onClick}>
+    <button type="button" className={`rounded-md border px-3 py-1.5 text-sm ${toneCls}`} onClick={onClick}>
       {label}
     </button>
   );
@@ -138,7 +155,7 @@ function FormulaFieldEditor({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-white/70 w-24">{label}</span>
+        <span className="text-sm text-zinc-500 w-24">{label}</span>
         <Select
           value={mode}
           onChange={(m) => {
@@ -176,7 +193,7 @@ function NumberRecordEditor({
   const entries = Object.entries(record ?? {});
   return (
     <div className="space-y-2">
-      {entries.length === 0 && <div className="text-sm text-white/60">No entries</div>}
+      {entries.length === 0 && <div className="text-sm text-zinc-500">No entries</div>}
       {entries.map(([k, v]) => (
         <Row key={k} cols={4}>
           <div>
@@ -233,7 +250,7 @@ function AssumptionsEditor({
   const entries = Object.entries(value ?? {});
   return (
     <div className="space-y-2">
-      {entries.length === 0 && <div className="text-sm text-white/60">No assumptions</div>}
+      {entries.length === 0 && <div className="text-sm text-zinc-500">No assumptions</div>}
       {entries.map(([k, v]) => {
         const type: "number" | "string" | "boolean" = typeof v === "number" ? "number" : typeof v === "boolean" ? "boolean" : "string";
         return (
@@ -320,7 +337,7 @@ function AssumptionsEditor({
 
 function RevenueItemEditor({ item, onChange, onRemove }: { item: RevenueItem; onChange: (next: RevenueItem) => void; onRemove: () => void }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
+    <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-2">
       <Row cols={6}>
         <div className="col-span-2">
           <TextInput value={item.name} onChange={(v) => onChange({ ...item, name: v })} placeholder="Item name" />
@@ -391,7 +408,7 @@ function RevenueGroupEditor({ group, onChange, onRemove }: { group: RevenueGroup
 
 function CostItemEditor({ item, onChange, onRemove }: { item: CostItem; onChange: (next: CostItem) => void; onRemove: () => void }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
+    <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-2">
       <Row cols={6}>
         <div className="col-span-3">
           <TextInput value={item.name} onChange={(v) => onChange({ ...item, name: v })} placeholder="Item name" />
@@ -401,7 +418,7 @@ function CostItemEditor({ item, onChange, onRemove }: { item: CostItem; onChange
         </div>
       </Row>
       <div>
-        <div className="text-sm text-white/70 mb-1">Inputs (available to formula)</div>
+        <div className="text-sm text-zinc-500 mb-1">Inputs (available to formula)</div>
         <NumberRecordEditor record={item.inputs} onChange={(rec) => onChange({ ...item, inputs: rec })} addLabel="Add input" />
       </div>
       <div className="flex">
@@ -449,12 +466,12 @@ function CostGroupEditor({ group, onChange, onRemove }: { group: CostGroup; onCh
 
 function CashflowEntryEditor({ entry, onChange, onRemove }: { entry: CashflowEntry; onChange: (next: CashflowEntry) => void; onRemove: () => void }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
+    <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-2">
       <Row cols={6}>
         <div>
           <input
             type="date"
-            className="w-full rounded-md bg-white/10 border border-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-400/40"
+            className="w-full rounded-md bg-white border border-zinc-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-300"
             value={entry.date}
             onChange={(e) => onChange({ ...entry, date: e.target.value })}
           />
@@ -478,7 +495,7 @@ function CashflowEntryEditor({ entry, onChange, onRemove }: { entry: CashflowEnt
 
 function RiskEditor({ risk, onChange, onRemove }: { risk: Risk; onChange: (next: Risk) => void; onRemove: () => void }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
+    <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-2">
       <Row cols={5}>
         <div className="col-span-2">
           <TextInput value={risk.risk} onChange={(v) => onChange({ ...risk, risk: v })} placeholder="Risk" />
@@ -500,7 +517,7 @@ function RiskEditor({ risk, onChange, onRemove }: { risk: Risk; onChange: (next:
 function KpiEditor({ kpi, onChange, onRemove }: { kpi: Kpi; onChange: (next: Kpi) => void; onRemove: () => void }) {
   const fmt = kpi.format ?? "number";
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
+    <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-2">
       <Row cols={6}>
         <div className="col-span-2">
           <TextInput value={kpi.label} onChange={(v) => onChange({ ...kpi, label: v })} placeholder="Label" />
@@ -528,7 +545,7 @@ function KpiEditor({ kpi, onChange, onRemove }: { kpi: Kpi; onChange: (next: Kpi
 function ScenarioEditor({ scenario, onChange, onRemove }: { scenario: Scenario; onChange: (next: Scenario) => void; onRemove: () => void }) {
   const multiplyKeysString = useMemo(() => (scenario.mutations.multiplyKeys ?? []).join(", "), [scenario.mutations.multiplyKeys]);
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2">
+    <div className="rounded-lg border border-zinc-200 bg-white p-3 space-y-2">
       <Row cols={6}>
         <div>
           <TextInput value={scenario.id} onChange={(v) => onChange({ ...scenario, id: v })} placeholder="ID" />
@@ -551,7 +568,7 @@ function ScenarioEditor({ scenario, onChange, onRemove }: { scenario: Scenario; 
         </div>
       </Row>
       <div>
-        <div className="text-sm text-white/70 mb-1">multiplyAssumptions</div>
+        <div className="text-sm text-zinc-500 mb-1">multiplyAssumptions</div>
         <NumberRecordEditor
           record={scenario.mutations.multiplyAssumptions}
           onChange={(rec) => onChange({ ...scenario, mutations: { ...scenario.mutations, multiplyAssumptions: rec } })}
@@ -574,12 +591,13 @@ export function ModelEditor() {
     <div className="space-y-6">
       {error && <div className="text-sm text-amber-400">{error}</div>}
 
-      <Section title="Assumptions">
+      <Section title="Assumptions" defaultExpanded={true}>
         <AssumptionsEditor value={model.assumptions} onChange={(next) => updateModel((m) => ({ ...m, assumptions: next }))} />
       </Section>
 
       <Section
         title="Revenue"
+        defaultExpanded={true}
         actions={<IconButton label="Add group" tone="success" onClick={() => updateModel((m) => ({ ...m, model: { ...m.model, revenues: [...m.model.revenues, { name: "", items: [] } as RevenueGroup] } }))} />}
       >
         <div className="space-y-3">
@@ -593,12 +611,13 @@ export function ModelEditor() {
               onRemove={() => updateModel((m) => ({ ...m, model: { ...m.model, revenues: m.model.revenues.filter((_, i) => i !== gi) } }))}
             />
           ))}
-          {model.model.revenues.length === 0 && <div className="text-sm text-white/60">No revenue groups</div>}
+          {model.model.revenues.length === 0 && <div className="text-sm text-zinc-500">No revenue groups</div>}
         </div>
       </Section>
 
       <Section
         title="Costs"
+        defaultExpanded={true}
         actions={<IconButton label="Add group" tone="success" onClick={() => updateModel((m) => ({ ...m, model: { ...m.model, costs: [...m.model.costs, { cluster: "", items: [] } as CostGroup] } }))} />}
       >
         <div className="space-y-3">
@@ -610,12 +629,13 @@ export function ModelEditor() {
               onRemove={() => updateModel((m) => ({ ...m, model: { ...m.model, costs: m.model.costs.filter((_, i) => i !== gi) } }))}
             />
           ))}
-          {model.model.costs.length === 0 && <div className="text-sm text-white/60">No cost groups</div>}
+          {model.model.costs.length === 0 && <div className="text-sm text-zinc-500">No cost groups</div>}
         </div>
       </Section>
 
       <Section
         title="Cashflow"
+        defaultExpanded={false}
         actions={<IconButton label="Add entry" tone="success" onClick={() => updateModel((m) => ({ ...m, cashflow: [...m.cashflow, { date: new Date().toISOString().slice(0, 10) } as CashflowEntry] }))} />}
       >
         <div className="space-y-3">
@@ -627,43 +647,46 @@ export function ModelEditor() {
               onRemove={() => updateModel((m) => ({ ...m, cashflow: m.cashflow.filter((_, i) => i !== ci) }))}
             />
           ))}
-          {model.cashflow.length === 0 && <div className="text-sm text-white/60">No cashflow entries</div>}
+          {model.cashflow.length === 0 && <div className="text-sm text-zinc-500">No cashflow entries</div>}
         </div>
       </Section>
 
       <Section
         title="Risks"
+        defaultExpanded={false}
         actions={<IconButton label="Add risk" tone="success" onClick={() => updateModel((m) => ({ ...m, risks: [...m.risks, { risk: "", severity: "Low", mitigation: "" } as Risk] }))} />}
       >
         <div className="space-y-3">
           {model.risks.map((r, ri) => (
             <RiskEditor key={ri} risk={r} onChange={(next) => updateModel((m) => ({ ...m, risks: m.risks.map((x, i) => (i === ri ? next : x)) }))} onRemove={() => updateModel((m) => ({ ...m, risks: m.risks.filter((_, i) => i !== ri) }))} />
           ))}
-          {model.risks.length === 0 && <div className="text-sm text-white/60">No risks</div>}
+          {model.risks.length === 0 && <div className="text-sm text-zinc-500">No risks</div>}
         </div>
       </Section>
 
       <Section
         title="KPIs"
+        defaultExpanded={false}
         actions={<IconButton label="Add KPI" tone="success" onClick={() => updateModel((m) => ({ ...m, kpis: [...m.kpis, { label: "", target: null, value: null, format: "number" } as Kpi] }))} />}
       >
         <div className="space-y-3">
           {model.kpis.map((k, ki) => (
             <KpiEditor key={ki} kpi={k} onChange={(next) => updateModel((m) => ({ ...m, kpis: m.kpis.map((x, i) => (i === ki ? next : x)) }))} onRemove={() => updateModel((m) => ({ ...m, kpis: m.kpis.filter((_, i) => i !== ki) }))} />
           ))}
-          {model.kpis.length === 0 && <div className="text-sm text-white/60">No KPIs</div>}
+          {model.kpis.length === 0 && <div className="text-sm text-zinc-500">No KPIs</div>}
         </div>
       </Section>
 
       <Section
         title="Scenarios"
+        defaultExpanded={false}
         actions={<IconButton label="Add scenario" tone="success" onClick={() => updateModel((m) => ({ ...m, scenarios: [...m.scenarios, { id: "", label: "", mutations: {} } as Scenario] }))} />}
       >
         <div className="space-y-3">
           {model.scenarios.map((s, si) => (
             <ScenarioEditor key={si} scenario={s} onChange={(next) => updateModel((m) => ({ ...m, scenarios: m.scenarios.map((x, i) => (i === si ? next : x)) }))} onRemove={() => updateModel((m) => ({ ...m, scenarios: m.scenarios.filter((_, i) => i !== si) }))} />
           ))}
-          {model.scenarios.length === 0 && <div className="text-sm text-white/60">No scenarios</div>}
+          {model.scenarios.length === 0 && <div className="text-sm text-zinc-500">No scenarios</div>}
         </div>
       </Section>
     </div>
