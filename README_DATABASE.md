@@ -1,66 +1,108 @@
-# Database Setup for FELS Dashboard
+# Database Setup - Neon Postgres
 
-## Vercel Postgres Setup
+## Setup mit Neon über Vercel Marketplace
 
-1. **Create Vercel Postgres Database**
-   - Go to your Vercel dashboard
-   - Navigate to the Storage tab
-   - Click "Create Database" → Select "Postgres"
-   - Choose a region close to your deployment
-   - Name your database (e.g., "fels-dashboard-db")
+### 1. Neon Integration hinzufügen
 
-2. **Connect Database to Project**
-   - In Vercel dashboard, go to your project
-   - Navigate to Settings → Environment Variables
-   - The Postgres integration will automatically add:
-     - `DATABASE_URL`: Connection string for Prisma
-     - `DIRECT_URL`: Direct connection for migrations
+1. **In Vercel Dashboard:**
+   - Gehe zu deinem Projekt
+   - Storage → Browse Marketplace
+   - Wähle **Neon** (Serverless Postgres)
+   - Klicke "Add Integration"
 
-3. **Local Development Setup**
-   - Copy `.env.example` to `.env.local`
-   - Add the database URLs from Vercel dashboard:
-     ```bash
-     DATABASE_URL="your-pooled-connection-url"
-     DIRECT_URL="your-direct-connection-url"
-     ```
+2. **Neon Account erstellen:**
+   - Falls noch keinen Account: Registriere dich bei Neon
+   - Verbinde Neon mit Vercel
+   - Erstelle ein neues Projekt in Neon
 
-4. **Initialize Database**
+3. **Database erstellen:**
+   - Name: `fels-dashboard` (oder ähnlich)
+   - Region: Wähle eine Region nahe deinem Vercel Deployment
+   - Der Free Tier reicht völlig aus
+
+### 2. Environment Variables
+
+Neon fügt automatisch diese Variables zu deinem Vercel Projekt hinzu:
+- `DATABASE_URL` - Pooled connection für Anwendung
+- `DATABASE_URL_UNPOOLED` - Direct connection für Migrationen
+
+### 3. Lokale Entwicklung
+
+1. **Environment Variables kopieren:**
+   - Gehe zu Vercel Dashboard → Settings → Environment Variables
+   - Kopiere beide DATABASE URLs
+   - Erstelle `.env.local`:
    ```bash
-   # Generate Prisma client
+   DATABASE_URL="postgresql://user:pass@host/dbname?sslmode=require"
+   DATABASE_URL_UNPOOLED="postgresql://user:pass@host/dbname?sslmode=require"
+   ```
+
+2. **Datenbank initialisieren:**
+   ```bash
+   # Prisma Client generieren
    npx prisma generate
    
-   # Push schema to database
+   # Schema zur Datenbank pushen
    npx prisma db push
-   
-   # Or use migrations (production)
-   npx prisma migrate dev --name init
    ```
 
-5. **Verify Setup**
+3. **Testen:**
    ```bash
-   # Open Prisma Studio to view data
+   # Prisma Studio öffnen
    npx prisma studio
+   
+   # Development Server starten
+   npm run dev
    ```
 
-## Database Schema
+### 4. Deployment
 
-The application uses a single `BusinessCase` table to store:
-- Business case configurations (YAML models)
-- Metadata (name, description, timestamps)
-- Future user associations
-
-## Deployment
-
-When deploying to Vercel:
-1. The database URLs are automatically available
-2. Add build command to generate Prisma client:
+1. **Build Command ist bereits konfiguriert:**
    ```json
    "build": "prisma generate && next build"
    ```
-3. Vercel will handle the database connection pooling
 
-## Troubleshooting
+2. **Deploy zu Vercel:**
+   ```bash
+   git add .
+   git commit -m "Add database persistence with Neon"
+   git push
+   ```
 
-- **Connection Issues**: Ensure your IP is whitelisted in Vercel Postgres settings
-- **Migration Errors**: Use `DIRECT_URL` for migrations, not the pooled connection
-- **Client Generation**: Run `npx prisma generate` after schema changes
+3. **Nach dem Deploy:**
+   - Vercel führt automatisch `prisma generate` aus
+   - Die Datenbank-Verbindung wird automatisch hergestellt
+
+### 5. Datenbank-Management
+
+**Prisma Studio (lokal):**
+```bash
+npm run db:studio
+```
+
+**Neon Dashboard:**
+- Gehe zu console.neon.tech
+- SQL Editor für direkte Queries
+- Branching für Test-Umgebungen
+
+### Troubleshooting
+
+**Connection Issues:**
+- Stelle sicher, dass SSL aktiviert ist (`?sslmode=require`)
+- Überprüfe die Environment Variables in Vercel
+
+**Migration Errors:**
+- Nutze `DATABASE_URL_UNPOOLED` für Migrationen
+- Bei Problemen: `npx prisma db push --force-reset` (ACHTUNG: Löscht alle Daten!)
+
+**Cold Starts:**
+- Neon hat minimal Cold Starts (< 500ms)
+- Connection Pooling ist automatisch aktiviert
+
+### Kosten
+
+Der **Neon Free Tier** beinhaltet:
+- 0.5 GB Storage
+- Unbegrenzte Branches
+- Auto-suspend nach 5 Minuten Inaktivität
+- Perfekt für dein Business Case Dashboard
