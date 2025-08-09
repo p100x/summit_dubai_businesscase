@@ -1,6 +1,13 @@
 "use client";
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
+// Local type to avoid using `any` while matching Recharts Tooltip's shape
+type WaterfallTooltipPayloadEntry = { payload: WaterfallData };
+type WaterfallTooltipProps = {
+  active?: boolean;
+  payload?: WaterfallTooltipPayloadEntry[];
+  label?: string | number;
+};
 
 export function RevenueCostBar({ data }: { data: { name: string; revenue: number; cost: number }[] }) {
   return (
@@ -114,7 +121,7 @@ export function WaterfallChart({
     stackBase: convertedEbitda >= 0 ? 0 : convertedEbitda,
   });
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip: React.FC<WaterfallTooltipProps> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as WaterfallData;
       return (

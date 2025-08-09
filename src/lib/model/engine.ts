@@ -73,7 +73,7 @@ function evaluateRevenueGroups(groups: RevenueGroup[], ctx: Record<string, numbe
 }
 
 function evaluateCostGroups(groups: CostGroup[], ctx: Record<string, number>): EvaluatedGroup[] {
-  return groups.map((g, gi) => {
+  return groups.map((g) => {
     const items = g.items.map((it) => {
       const localCtx = { ...ctx, ...(it.inputs ?? {}) };
       const amount = toAmount(it.value, localCtx) ?? 0;

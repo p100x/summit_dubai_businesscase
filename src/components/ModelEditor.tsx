@@ -41,7 +41,7 @@ function TextInput({ value, onChange, placeholder }: { value: string; onChange: 
 }
 
 function NumberInput({ value, onChange, placeholder }: { value: number | undefined | null; onChange: (v: number | undefined) => void; placeholder?: string }) {
-  const str = value ?? value === 0 ? String(value) : "";
+  const str = value == null ? "" : String(value);
   return (
     <input
       className="w-full rounded-md bg-white/10 border border-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-400/40 placeholder:text-white/40 transition-colors hover:bg-white/15"
