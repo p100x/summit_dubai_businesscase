@@ -1,6 +1,5 @@
 "use client";
 import { useModelStore } from "@/store/modelStore";
-import { KpiCard } from "@/components/KpiCard";
 import { ComparisonKpiCard } from "@/components/ComparisonKpiCard";
 import { CollapsibleTable } from "@/components/CollapsibleTable";
 import { WaterfallChart } from "@/components/Charts";

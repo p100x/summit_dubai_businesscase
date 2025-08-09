@@ -117,7 +117,7 @@ export function ComparisonKpiCard({
                   <ArrowTrendingDownIcon className="h-3 w-3" />
                 )}
                 <span>
-                  {formatVariance(variance, format, currency)} ({variancePercent >= 0 ? "+" : ""}{variancePercent.toFixed(1)}%)
+                  Δ {formatVariance(variance, format, currency)} ({variancePercent >= 0 ? "+" : ""}{variancePercent.toFixed(1)}%)
                 </span>
               </div>
             )}
