@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card: #f7f7f7;
+  --muted: #9ca3af;
+  --ring: #10b981;
+  --accent: #34d399;
 }
 
 @theme inline {
@@ -15,12 +19,30 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    --foreground: #e5e7eb;
+    --card: #0f1115;
+    --muted: #9ca3af;
+    --ring: #34d399;
+    --accent: #34d399;
   }
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(52, 211, 153, 0.08), transparent),
+    radial-gradient(1000px 500px at 100% 0%, rgba(59, 130, 246, 0.06), transparent),
+    linear-gradient(to bottom, #0b0b10, var(--background));
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 40%, transparent);
+  color: white;
+}
+
+/* Subtle, consistent default focus ring for interactive elements */
+:where(button, [type="button"], [type="submit"], [type="reset"], select, input, textarea, a):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 40%, transparent);
 }

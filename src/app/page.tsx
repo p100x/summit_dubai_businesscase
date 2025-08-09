@@ -1,103 +1,126 @@
-import Image from "next/image";
+"use client";
+import { useModelStore } from "@/store/modelStore";
+import { KpiCard } from "@/components/KpiCard";
+import { SimpleTable } from "@/components/Tables";
+import { WaterfallChart } from "@/components/Charts";
+import ModelEditor from "@/components/ModelEditor";
+import { CurrencySwitcher } from "@/components/CurrencySwitcher";
+import { BusinessCaseManager } from "@/components/BusinessCaseManager";
+
+function formatCurrency(n: number, currencyCode: 'EUR' | 'AED') {
+  const locale = currencyCode === 'EUR' ? 'de-DE' : 'en-AE';
+  return new Intl.NumberFormat(locale, { 
+    style: "currency", 
+    currency: currencyCode, 
+    maximumFractionDigits: 0 
+  }).format(n);
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { evaluation, error, model, currency } = useModelStore();
+  const fxAssumption = (model.assumptions as Record<string, unknown>)["eur_to_aed"];
+  const fx = typeof fxAssumption === "number" ? fxAssumption : Number(fxAssumption ?? 0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Helper function to convert AED amounts to EUR when needed
+  const convertAmount = (amountAED: number) => {
+    return currency === 'EUR' ? amountAED / fx : amountAED;
+  };
+
+  // Helper function to format amounts in selected currency
+  const currency_format = (amountAED: number) => {
+    const convertedAmount = convertAmount(amountAED);
+    return formatCurrency(convertedAmount, currency);
+  };
+
+  const revenueRows = evaluation.revenueGroups.flatMap((g) => [
+    { name: `— ${g.name}`, amount: <span className="font-medium">{currency_format(g.subtotalAED)}</span> },
+    ...g.items.map((it) => ({ name: it.name, amount: currency_format(it.amountAED) })),
+  ]);
+  const costRows = evaluation.costGroups.flatMap((g) => [
+    { name: `— ${g.name}`, amount: <span className="font-medium">{currency_format(g.subtotalAED)}</span> },
+    ...g.items.map((it) => ({ name: it.name, amount: currency_format(it.amountAED) })),
+  ]);
+
+  return (
+    <div className="min-h-screen text-white">
+      <div className="mx-auto max-w-7xl space-y-8 px-6 py-10">
+        <div className="flex items-end justify-between">
+          <div>
+            <h1 className="bg-gradient-to-r from-emerald-300 to-teal-200 bg-clip-text text-3xl font-semibold tracking-tight text-transparent">
+              FELS Wealth Summit 2025
+            </h1>
+            <p className="text-white/60">Integrated Business Case Dashboard</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <BusinessCaseManager />
+            <CurrencySwitcher />
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/80">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              EUR/AED: {fx.toFixed(2)}
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <KpiCard 
+            label="Gross Revenue" 
+            value={convertAmount(evaluation.revenueAED)} 
+            format="currency" 
+            currency={currency}
+            icon={<span>💰</span>} 
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <KpiCard 
+            label="Total Cost" 
+            value={convertAmount(evaluation.costAED)} 
+            format="currency" 
+            currency={currency}
+            icon={<span>🧾</span>} 
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+          <KpiCard 
+            label="EBITDA" 
+            value={convertAmount(evaluation.ebitdaAED)} 
+            format="currency" 
+            currency={currency}
+            icon={<span>📈</span>} 
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <KpiCard 
+            label="EBITDA Margin" 
+            value={evaluation.ebitdaMargin} 
+            format="percent" 
+            icon={<span>➗</span>} 
+          />
+        </div>
+
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
+          <h2 className="mb-2 text-lg font-semibold">Revenue to EBITDA Waterfall</h2>
+          <WaterfallChart
+            revenueGroups={evaluation.revenueGroups}
+            costGroups={evaluation.costGroups}
+            ebitdaAED={evaluation.ebitdaAED}
+            currency={currency}
+            exchangeRate={fx}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
+            <h2 className="mb-2 text-lg font-semibold">Revenue Details</h2>
+            <SimpleTable columns={[{ key: "name", label: "Item" }, { key: "amount", label: currency, align: "right" }]} rows={revenueRows} />
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
+            <h2 className="mb-2 text-lg font-semibold">Cost Details</h2>
+            <SimpleTable columns={[{ key: "name", label: "Item" }, { key: "amount", label: currency, align: "right" }]} rows={costRows} />
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Model Editor</h2>
+            {error && <span className="text-sm text-amber-400">{error}</span>}
+          </div>
+          <ModelEditor />
+        </div>
+      </div>
     </div>
   );
 }
